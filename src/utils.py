@@ -9,7 +9,6 @@ from config import EKLASE_DIARY_URL, EKLASE_HOME, EKLASE_LOGIN_URL, HEADERS
 
 
 async def get_auth_cookies(username: str, password: str):
-    logger.info("Getting auth cookies from e-klase...")
     login_data = {
         'UserName': username,
         'Password': password,
@@ -72,7 +71,7 @@ async def get_raw_diary(cookie: SimpleCookie, date: datetime | None) -> bytes:
         date = datetime.today()
 
     diary_url = EKLASE_DIARY_URL+f"?Date={date.day}.{date.month}.{date.year}"
-    logger.info(f"Getting diary from this url: {diary_url}")
+    logger.debug(f"Getting diary from this url: {diary_url}")
 
     async with aiohttp.ClientSession(headers=HEADERS) as session:
         async with session.get(diary_url, cookies=cookie) as r_diary:

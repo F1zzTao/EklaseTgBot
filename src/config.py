@@ -16,21 +16,36 @@ EKLASE_HOME = "https://my.e-klase.lv"
 EKLASE_LOGIN_URL = EKLASE_HOME+"/?v=15"
 EKLASE_DIARY_URL = EKLASE_HOME+"/Family/Diary"
 
-EMOJIS = {
-    "ģeogrāfija": "🌍",
-    "svešvaloda i (b2)": "🇬🇧",  # English
-    "svešvaloda (b1)": "🇩🇪",    # German
-    "matemātika": "➗",
-    "bioloģija": "🧬",
-    "literatūra": "📝",
-    "latviešu": "🇱🇻",           # Latvian
-    "ekonomika": "💰",
-    "sports": "🏃‍♂️",
-    "fizika": "⚛️",
-    "ķīmija": "🧪",
-    "vēsture": "📜",
-    "sociālās": "🌍",
-    "programmēšana": "💻",
-    "mazākumtautības": "🇷🇺",    # Russian
-    "klases": "🏫"
+LESSONS_INFO = {
+    "ģeogrāfija": {"emoji": "🌍", "translation": "География"},
+    "svešvaloda i (b2)": {"emoji": "🇬🇧", "translation": "Английский язык (B2)"},
+    "svešvaloda (b1)": {"emoji": "🇩🇪", "translation": "Немецкий язык (B1)"},
+    "matemātika": {"emoji": "➗", "translation": "Математика"},
+    "bioloģija": {"emoji": "🧬", "translation": "Биология"},
+    "literatūra": {"emoji": "📝", "translation": "Литература"},
+    "latviešu": {"emoji": "🇱🇻", "translation": "Латышский язык"},
+    "ekonomika": {"emoji": "💰", "translation": "Экономика"},
+    "sports": {"emoji": "🏃‍♂️", "translation": "Спорт"},
+    "fizika": {"emoji": "⚛️", "translation": "Физика"},
+    "ķīmija": {"emoji": "🧪", "translation": "Химия"},
+    "vēsture": {"emoji": "📜", "translation": "История"},
+    "sociālās": {"emoji": "🌍", "translation": "Соц. знания"},
+    "programmēšana": {"emoji": "💻", "translation": "Программирование"},
+    "mazākumtautības": {"emoji": "🇷🇺", "translation": "Русский язык"},
+    "klases": {"emoji": "🏫", "translation": "Классный час"}
+}
+SPORT_ROOM_TRANSLATION = "сз."
+WEEK_DAY_INFO = {
+    "pirmdiena": "понедельник",
+    "otrdiena": "вторник",
+    "trešdiena": "среда",
+    "ceturtdiena": "четверг",
+    "piektdiena": "пятница",
+}
+CLOSE_DATE_INFO = {
+    "aizvakar": "позавчера",
+    "vakar": "вчера",
+    "šodien": "сегодня",
+    "rīt": "завтра",
+    "parīt": "послезавтра",
 }
