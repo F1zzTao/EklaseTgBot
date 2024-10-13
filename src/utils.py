@@ -215,7 +215,10 @@ def format_diary(diary: list[dict]) -> str:
 def format_homeworks(homeworks: list[tuple[datetime, list[dict]]]) -> str:
     msg = ""
     for date, lessons in homeworks:
-        msg += f"{date.strftime('%d.%m.%y')}:"
+        if lessons:
+            msg += f"{date.strftime('%d.%m.%y')}:"
+        else:
+            continue
         for lesson in lessons:
             lesson_title = find_t(lesson['name'], LESSONS_INFO) or lesson['name']
             lesson_homework = lesson['homework']
