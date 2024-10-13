@@ -1,3 +1,4 @@
+import asyncio
 import re
 from datetime import datetime
 from http.cookies import SimpleCookie
@@ -11,6 +12,8 @@ from config import (
     EKLASE_DIARY_URL,
     EKLASE_HOME,
     EKLASE_LOGIN_URL,
+    EKLASE_PASSWORD,
+    EKLASE_USERNAME,
     HEADERS,
     LESSONS_INFO,
     SPORT_ROOM_TRANSLATION,
@@ -80,7 +83,9 @@ async def get_auth_cookies(username: str, password: str):
 
 
 @cached(ttl=30)
-async def get_raw_diary(cookie: SimpleCookie, date: datetime | None) -> bytes:
+async def get_raw_diary(
+    cookie: SimpleCookie, date: datetime | None = None
+) -> bytes:
     if not date:
         date = datetime.today()
 
@@ -123,7 +128,9 @@ def get_diary(raw_diary: bytes) -> list[dict]:
             this_lesson_dict = {
                 "num": None,
                 "name": None,
-                "cab": None
+                "topic": None,
+                "homework": None,
+                "cab": None,
             }
             lesson_number = lessons_item.find("span", class_="number").text.strip()
             if lesson_number == '·':
@@ -132,8 +139,46 @@ def get_diary(raw_diary: bytes) -> list[dict]:
             lesson_title = lessons_item.find("span", class_="title").text.strip()
             lesson_room = lessons_item.find("span", class_="room").text.strip()
 
+            # Extracting topic
+            lesson_topic_div = lessons_item.find("div", class_="lesson-subitem subject")
+            lesson_topic = ""
+            if lesson_topic_div:
+                lesson_topics = lesson_topic_div.find_all("p")
+                for topic in lesson_topics:
+                    # Converting the text and tags into a string
+                    lesson_topic += ''.join(
+                        str(child) for child in topic.children
+                    ).strip() + "\n"
+                for file in lesson_topic_div.find_all("a", class_="file", href=True):
+                    href_link = EKLASE_HOME+file["href"]
+                    lesson_topic += f'<a href="{href_link}">{file.text}</a>\n'
+                lesson_topic = lesson_topic.strip()
+            if not lesson_topic:
+                lesson_topic = None
+
+            # Extracting homework
+            lesson_homework_divs = lessons_item.find_all('div', class_='lesson-subitem')
+            lesson_homework_div = lesson_homework_divs[-1]
+            lesson_homework_description = lesson_homework_div.find('div', class_='description')
+            lesson_homework = ""
+            if lesson_homework_description:
+                lesson_homeworks = lesson_homework_description.find_all("p")
+                for homework in lesson_homeworks:
+                    # Converting the text and tags into a string
+                    lesson_homework += ''.join(
+                        str(child) for child in homework.children
+                    ).strip() + "\n"
+                for file in lesson_homework_description.find_all("a", class_="file", href=True):
+                    href_link = EKLASE_HOME+file["href"]
+                    lesson_homework += f'<a href="{href_link}">{file.text}</a> '
+                lesson_homework = lesson_homework.strip()
+            if not lesson_homework:
+                lesson_homework = None
+
             this_lesson_dict['num'] = lesson_number
             this_lesson_dict['name'] = lesson_title
+            this_lesson_dict['topic'] = lesson_topic
+            this_lesson_dict['homework'] = lesson_homework
             this_lesson_dict['cab'] = lesson_room
 
             this_day_dict['lessons'].append(this_lesson_dict)
@@ -167,6 +212,23 @@ def format_diary(diary: list[dict]) -> str:
     return msg
 
 
+def format_homeworks(homeworks: list[tuple[datetime, list[dict]]]) -> str:
+    msg = ""
+    for date, lessons in homeworks:
+        msg += f"{date.strftime('%d.%m.%y')}:"
+        for lesson in lessons:
+            lesson_title = find_t(lesson['name'], LESSONS_INFO) or lesson['name']
+            lesson_homework = lesson['homework']
+            lesson_emoji = None
+            for key in LESSONS_INFO:
+                if key in lesson['name'].lower():
+                    lesson_emoji = LESSONS_INFO[key]['emoji'] + " "
+                    break
+            msg += f"\n- {lesson_emoji}{lesson_title} - {lesson_homework}"
+        msg += "\n\n"
+    return msg
+
+
 def find_t(string: str | None, translations: dict, exact: bool = False):
     if string is None:
         return
@@ -178,3 +240,17 @@ def find_t(string: str | None, translations: dict, exact: bool = False):
         else:
             if key in string.lower():
                 return translations[key]['translation']
+
+
+async def main():
+    cookies = await get_auth_cookies(EKLASE_USERNAME, EKLASE_PASSWORD)
+    raw_diary = await get_raw_diary(cookies)
+    with open("eklase_diary.html", "wb") as f:
+        f.write(raw_diary)
+
+    diary = get_diary(raw_diary)
+    logger.info(diary)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
