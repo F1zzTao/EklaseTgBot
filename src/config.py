@@ -49,3 +49,4 @@ CLOSE_DAY_INFO = {
     "rīt": {"translation": "завтра"},
     "parīt": {"translation": "послезавтра"},
 }
+BORING_EMOJIS = ['🥱', '🙄', '😮‍💨', '😩', '😴', '😒', '😭', '💀', '💔']

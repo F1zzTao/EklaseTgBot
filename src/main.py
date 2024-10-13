@@ -1,15 +1,27 @@
 import asyncio
 import logging
+import random
 import sys
 from datetime import datetime, timedelta
 
 from aiogram import Bot, Dispatcher, types
-from aiogram.filters import Command
 from aiogram.enums.parse_mode import ParseMode
-
+from aiogram.filters import Command
 from loguru import logger
-from config import EKLASE_PASSWORD, EKLASE_USERNAME, TG_BOT_TOKEN
-from utils import format_diary, format_homeworks, get_auth_cookies, get_diary, get_raw_diary
+
+from config import (
+    BORING_EMOJIS,
+    EKLASE_PASSWORD,
+    EKLASE_USERNAME,
+    TG_BOT_TOKEN
+)
+from utils import (
+    format_diary,
+    format_homeworks,
+    get_auth_cookies,
+    get_diary,
+    get_raw_diary
+)
 
 dp = Dispatcher()
 
@@ -75,11 +87,17 @@ async def homework_handler(message: types.Message):
 
     if not homeworks:
         await message.answer(
-            f"На {'следующей' if is_next_week else 'этой'} неделе домашек нет. Ура!!"
+            f"🎉 На {'следующей' if is_next_week else 'этой'} неделе домашек нет. Ура!!"
         )
         return
 
-    msg = format_homeworks(homeworks)
+    homework_count = sum(len(item[1]) for item in homeworks)
+
+    msg = (
+        f"{random.choice(BORING_EMOJIS)} На {'следующей' if is_next_week else 'этой'} неделе есть"
+        f" {'аж '+str(homework_count)+' домашек...' if homework_count >= 2 else '1 домашка:'}\n\n"
+    )
+    msg += format_homeworks(homeworks)
     await message.answer(msg, parse_mode=ParseMode.HTML)
 
 

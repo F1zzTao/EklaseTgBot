@@ -4,6 +4,7 @@ from datetime import datetime
 from http.cookies import SimpleCookie
 
 import aiohttp
+from aiocache import cached
 from bs4 import BeautifulSoup
 from loguru import logger
 
@@ -19,7 +20,6 @@ from config import (
     SPORT_ROOM_TRANSLATION,
     WEEK_DAY_INFO
 )
-from aiocache import cached
 
 
 @cached(ttl=30)
