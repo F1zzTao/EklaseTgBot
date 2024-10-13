@@ -22,7 +22,8 @@ LESSONS_INFO = {
     "svešvaloda (b1)": {"emoji": "🇩🇪", "translation": "Немецкий язык (B1)"},
     "matemātika": {"emoji": "➗", "translation": "Математика"},
     "bioloģija": {"emoji": "🧬", "translation": "Биология"},
-    "literatūra": {"emoji": "📝", "translation": "Литература"},
+    "mazākumtautības": {"emoji": "🇷🇺", "translation": "Русский язык"},
+    "literatūra": {"emoji": "📝", "translation": "Литература"},  # this must be below russian
     "latviešu": {"emoji": "🇱🇻", "translation": "Латышский язык"},
     "ekonomika": {"emoji": "💰", "translation": "Экономика"},
     "sports": {"emoji": "🏃‍♂️", "translation": "Спорт"},
@@ -31,21 +32,20 @@ LESSONS_INFO = {
     "vēsture": {"emoji": "📜", "translation": "История"},
     "sociālās": {"emoji": "🌍", "translation": "Соц. знания"},
     "programmēšana": {"emoji": "💻", "translation": "Программирование"},
-    "mazākumtautības": {"emoji": "🇷🇺", "translation": "Русский язык"},
     "klases": {"emoji": "🏫", "translation": "Классный час"}
 }
 SPORT_ROOM_TRANSLATION = "сз."
 WEEK_DAY_INFO = {
-    "pirmdiena": "понедельник",
-    "otrdiena": "вторник",
-    "trešdiena": "среда",
-    "ceturtdiena": "четверг",
-    "piektdiena": "пятница",
+    "pirmdiena": {"translation": "Понедельник"},
+    "otrdiena": {"translation": "Вторник"},
+    "trešdiena": {"translation": "Среда"},
+    "ceturtdiena": {"translation": "Четверг"},
+    "piektdiena": {"translation": "Пятница"},
 }
-CLOSE_DATE_INFO = {
-    "aizvakar": "позавчера",
-    "vakar": "вчера",
-    "šodien": "сегодня",
-    "rīt": "завтра",
-    "parīt": "послезавтра",
+CLOSE_DAY_INFO = {
+    "aizvakar": {"translation": "позавчера"},
+    "vakar": {"translation": "вчера"},
+    "šodien": {"translation": "сегодня"},
+    "rīt": {"translation": "завтра"},
+    "parīt": {"translation": "послезавтра"},
 }
