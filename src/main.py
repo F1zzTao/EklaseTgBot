@@ -29,7 +29,7 @@ dp = Dispatcher()
 @dp.message(Command(commands=["расписание", "diary"]))
 async def start_handler(message: types.Message):
     msg = ""
-    today_date = datetime.today()
+    today_date = datetime.today().date()
     week_day_num = today_date.isoweekday()
 
     if week_day_num >= 6:
@@ -54,11 +54,11 @@ async def start_handler(message: types.Message):
 
 @dp.message(Command(commands=["домашка", "задания", "homework", "exercises"]))
 async def homework_handler(message: types.Message):
-    today_date = datetime.today()
+    today_date = datetime.today().date()
     week_day_num = today_date.isoweekday()
 
     is_next_week = False
-    if week_day_num >= 5:
+    if week_day_num >= 6:
         # If it's a day off OR Friday, we skip to the monday
         is_next_week = True
         today_date += timedelta(days=8-week_day_num)
@@ -70,14 +70,14 @@ async def homework_handler(message: types.Message):
     homeworks: list = []
     for day in diary:
         school_day_str = day["date"]
-        school_day = datetime.strptime(school_day_str, "%d.%m.%y")
-        today_date = datetime.today()
+        school_day = datetime.strptime(school_day_str, "%d.%m.%y").date()
+        # today_date += timedelta(days=1)
         lessons = []
         for lesson in day["lessons"]:
             if lesson["homework"] is None:
                 # If we don't have homework (yay!), we skip the lesson
                 continue
-            if today_date > school_day:
+            if today_date - timedelta(days=1) > school_day:
                 # If the homework was in the past, we skip it
                 continue
 
@@ -99,6 +99,33 @@ async def homework_handler(message: types.Message):
     )
     msg += format_homeworks(homeworks)
     await message.answer(msg, parse_mode=ParseMode.HTML)
+
+
+@dp.message(Command(commands=["звонки", "bells", "school", "today"]))
+async def bells_handler(message: types.Message):
+    today_date = datetime.today().date()
+    week_day_num = today_date.isoweekday()
+
+    is_next_week = False
+    if week_day_num >= 6:
+        # If it's a day off (Saturday or Sunday), we skip to the monday
+        is_next_week = True
+        today_date += timedelta(days=8-week_day_num)
+
+    auth_cookie = await get_auth_cookies(EKLASE_USERNAME, EKLASE_PASSWORD)
+    raw_diary: bytes = await get_raw_diary(auth_cookie, today_date)
+    diary: list[dict] = get_diary(raw_diary)
+    today_diary = None
+    for day in diary:
+        school_day_str = day["date"]
+        school_day = datetime.strptime(school_day_str, "%d.%m.%y").date()
+        if school_day != today_date:
+            continue
+        today_diary = day
+        break
+
+    msg = format_homeworks([[today_date, today_diary]])
+    await message.answer(msg)
 
 
 async def main():
