@@ -1,5 +1,6 @@
 import asyncio
 import re
+from datetime import date as Date_
 from datetime import datetime
 from http.cookies import SimpleCookie
 
@@ -17,6 +18,7 @@ from config import (
     EKLASE_USERNAME,
     HEADERS,
     LESSONS_INFO,
+    NORMAL_LESSON_TIMETABLE,
     SPORT_ROOM_TRANSLATION,
     WEEK_DAY_INFO
 )
@@ -188,6 +190,63 @@ def get_diary(raw_diary: bytes) -> list[dict]:
     return days_list
 
 
+def get_today_diary(
+    diary: list[dict], today_date: Date_ | None = None
+) -> dict | None:
+    if not today_date:
+        today_date = datetime.today().date()
+
+    today_diary = None
+    for day in diary:
+        school_day_str = day["date"]
+        school_day = datetime.strptime(school_day_str, "%d.%m.%y").date()
+        if school_day != today_date:
+            continue
+        today_diary = day
+        break
+    return today_diary
+
+
+def render_lesson(
+    lesson: dict,
+    add_time: bool = False,
+    show_num: bool = True,
+    timetable: dict = NORMAL_LESSON_TIMETABLE,
+    add_homework: bool = True,
+    add_homework_notif: bool = False,
+    is_next: bool = False
+):
+    lesson_num_str: str = lesson['num']
+    if show_num:
+        msg = f"{lesson_num_str} "
+    else:
+        msg = "• "
+    lesson_num: int = int(lesson_num_str.strip(". "))
+    if add_time:
+        msg += f"({timetable[lesson_num]}) "
+
+    lesson_title = find_t(lesson['name'], LESSONS_INFO) or lesson['name']
+
+    lesson_emoji = None
+    for key in LESSONS_INFO:
+        if key in lesson['name'].lower():
+            lesson_emoji = LESSONS_INFO[key]['emoji'] + " "
+            break
+
+    if is_next:
+        # This is the next lesson! We're bolding it and adding an emoji,
+        # replacing the original one
+        lesson_title = f"<b>{lesson_title}</b> ⬅️"
+
+    msg += f"{lesson_emoji}{lesson_title}"
+    if add_homework_notif and lesson['homework']:
+        msg += " (❗)"
+    if add_homework:
+        lesson_homework = lesson['homework']
+        msg += f" - {lesson_homework}"
+    return msg
+
+
 def format_diary(diary: list[dict]) -> str:
     msg = ""
     for day in diary:
@@ -212,22 +271,47 @@ def format_diary(diary: list[dict]) -> str:
     return msg
 
 
-def format_homeworks(homeworks: list[tuple[datetime, list[dict]]]) -> str:
+def format_list_lessons(
+    diary_list: list[tuple[datetime, list[dict]]],
+    add_time: bool = False,
+    show_num: bool = True,
+    timetable: dict = NORMAL_LESSON_TIMETABLE,
+    add_homework: bool = True,
+    add_homework_notif: bool = False,
+    show_next_lesson: bool = False,
+) -> str:
+    current_time = datetime.now().time()
+
     msg = ""
-    for date, lessons in homeworks:
+    for date, lessons in diary_list:
         if lessons:
             msg += f"{date.strftime('%d.%m.%y')}:"
         else:
             continue
-        for lesson in lessons:
-            lesson_title = find_t(lesson['name'], LESSONS_INFO) or lesson['name']
-            lesson_homework = lesson['homework']
-            lesson_emoji = None
-            for key in LESSONS_INFO:
-                if key in lesson['name'].lower():
-                    lesson_emoji = LESSONS_INFO[key]['emoji'] + " "
+
+        next_lesson_index = None
+        if show_next_lesson:
+            # Find the next lesson
+            for i, lesson in enumerate(lessons):
+                lesson_num_str: str = lesson['num']
+                lesson_num: int = int(lesson_num_str.strip(". "))
+                lesson_time_str = timetable[lesson_num]
+                lesson_time = datetime.strptime(lesson_time_str, "%H:%M").time()
+                if current_time < lesson_time:
+                    next_lesson_index = i
                     break
-            msg += f"\n- {lesson_emoji}{lesson_title} - {lesson_homework}"
+
+        for i, lesson in enumerate(lessons):
+            rendered_lesson = render_lesson(
+                lesson=lesson,
+                add_time=add_time,
+                show_num=show_num,
+                timetable=timetable,
+                add_homework=add_homework,
+                add_homework_notif=add_homework_notif,
+                is_next=i == next_lesson_index,
+            )
+            msg += f"\n{rendered_lesson}"
         msg += "\n\n"
     return msg
 
