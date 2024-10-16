@@ -5,6 +5,7 @@ import sys
 from datetime import datetime, timedelta
 
 from aiogram import Bot, Dispatcher, types
+from aiogram.client.default import DefaultBotProperties
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.filters import Command
 from loguru import logger
@@ -13,9 +14,15 @@ from config import (
     BORING_EMOJIS,
     EKLASE_PASSWORD,
     EKLASE_USERNAME,
+    FEW_LESSONS_EMOJIS,
+    MUCH_LESSONS_EMOJIS,
+    MUCH_LESSONS_MIN_COUNT,
     NORMAL_LESSON_TIMETABLE,
+    OKAY_LESSONS_EMOJIS,
+    OKAY_LESSONS_MIN_COUNT,
     TG_BOT_TOKEN
 )
+from db import create_tables
 from utils import (
     format_diary,
     format_list_lessons,
@@ -80,7 +87,7 @@ async def homework_handler(message: types.Message):
             if lesson["homework"] is None:
                 # If we don't have homework (yay!), we skip the lesson
                 continue
-            if today_date - timedelta(days=1) > school_day:
+            if today_date > school_day:
                 # If the homework was in the past, we skip it
                 skipped_past = True
                 continue
@@ -112,7 +119,6 @@ async def homework_handler(message: types.Message):
     msg += format_list_lessons(homeworks, show_num=False)
     await message.answer(
         msg,
-        parse_mode=ParseMode.HTML,
         link_preview_options=types.LinkPreviewOptions(is_disabled=True)
     )
 
@@ -131,7 +137,23 @@ async def bells_handler(message: types.Message):
     diary: list[dict] = get_diary(raw_diary)
     today_diary = get_today_diary(diary, today_date)
 
-    msg = format_list_lessons(
+    lesson_count = len(today_diary['lessons'])
+    ending = ''
+    if lesson_count >= 3:
+        ending = 'ов'
+    elif lesson_count >= 2:
+        ending = 'а'
+
+    if lesson_count >= MUCH_LESSONS_MIN_COUNT:
+        emojis = MUCH_LESSONS_EMOJIS
+    elif lesson_count >= OKAY_LESSONS_MIN_COUNT:
+        emojis = OKAY_LESSONS_EMOJIS
+    else:
+        emojis = FEW_LESSONS_EMOJIS
+    lesson_emoji = random.choice(emojis)
+
+    msg = f"{lesson_emoji} Сегодня всего {lesson_count} урок{ending}.\n\n"
+    msg += format_list_lessons(
         [(today_date, today_diary["lessons"],)],
         add_time=True,
         timetable=NORMAL_LESSON_TIMETABLE,
@@ -139,12 +161,14 @@ async def bells_handler(message: types.Message):
         add_homework_notif=True,
         show_next_lesson=True,
     )
-    await message.answer(msg, parse_mode=ParseMode.HTML)
+    await message.answer(msg)
 
 
 async def main():
+    bot = Bot(TG_BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    dp.startup.register(create_tables)
+
     logger.info("Starting bot")
-    bot = Bot(TG_BOT_TOKEN)
     await dp.start_polling(bot)
 
 

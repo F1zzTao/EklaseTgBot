@@ -9,12 +9,24 @@ TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
 EKLASE_USERNAME = os.getenv("EKLASE_USERNAME")
 EKLASE_PASSWORD = os.getenv("EKLASE_PASSWORD")
 
+DB_PATH = "./db.db"
+
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:130.0) Gecko/20100101 Firefox/130.0"
 }
 EKLASE_HOME = "https://my.e-klase.lv"
 EKLASE_LOGIN_URL = EKLASE_HOME+"/?v=15"
 EKLASE_DIARY_URL = EKLASE_HOME+"/Family/Diary"
+
+BORING_EMOJIS = ('🥱', '🙄', '😮‍💨', '😩', '😴', '😒', '😭', '💀', '💔')
+
+FEW_LESSONS_EMOJIS = ('😮‍💨', '🎉', '🤩')
+OKAY_LESSONS_EMOJIS = ('😅', '🤨', '😐')
+MUCH_LESSONS_EMOJIS = ('😭', '😨', '💀')
+
+FEW_LESSONS_MIN_COUNT = 1
+OKAY_LESSONS_MIN_COUNT = 7
+MUCH_LESSONS_MIN_COUNT = 8
 
 LESSONS_INFO = {
     "ģeogrāfija": {"emoji": "🌍", "translation": "География"},
@@ -49,7 +61,6 @@ CLOSE_DAY_INFO = {
     "rīt": {"translation": "завтра"},
     "parīt": {"translation": "послезавтра"},
 }
-BORING_EMOJIS = ['🥱', '🙄', '😮‍💨', '😩', '😴', '😒', '😭', '💀', '💔']
 
 NORMAL_LESSON_TIME = 40 * 60  # 40 minutes
 SHORT_LESSON_TIME = 30 * 60   # 30 minutes
